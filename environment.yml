@@ -1,0 +1,9 @@
+name: error
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.8
+  - ipykernel
+prefix: /home/mayank/.conda/envs/error
+
