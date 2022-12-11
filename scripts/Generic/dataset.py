@@ -1,5 +1,6 @@
 from enum import Enum
 import os
+from math import floor
 
 
 class Dataset(Enum):
@@ -48,6 +49,10 @@ def WAV_PATH(data_obj):
         raise ValueError(f"{data_obj.name} is not a valid Dataset")
     
     return PATH
+
+
+def BUDGET_TO_DURATION(budget):
+    return floor(4.92 * budget)
 
 
 if __name__ == "__main__":
