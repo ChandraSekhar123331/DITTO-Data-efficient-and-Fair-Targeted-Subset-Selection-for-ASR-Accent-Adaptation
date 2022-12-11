@@ -8,8 +8,10 @@ echo
 CUDA=0
 DATASET=MCV
 
-declare -a accents=('african' 'indian' 'hongkong' 'philippines' 'england' 'scotland' 'ireland' 'australia' 'canada' 'us' 'bermuda' 'southatlandtic' 'wales' 'malaysia')
 
+# declare -a accents=('african' 'indian' 'hongkong' 'philippines' 'england' 'scotland' 'ireland' 'australia' 'canada' 'us' 'bermuda' 'southatlandtic' 'wales' 'malaysia')
+# Issues are there with bermuda, wales, and malaysia.. Ignore those
+declare -a accents=('african' 'indian' 'hongkong' 'philippines' 'england' 'scotland' 'ireland' 'australia' 'canada' 'us' 'southatlandtic')
 for accent in "${accents[@]}"
 do
 echo $accent
