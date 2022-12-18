@@ -19,6 +19,17 @@ def get_path(data_obj):
     WAV = WAV_PATH(data_obj)
     return HOME, DATASET, WAV
 
+def get_all_accents(data_obj):
+    if data_obj is Dataset.INDIC:
+        accent_list =  ("assamese", "gujarati", "hindi", "kannada", "malayalam", "manipuri", "rajasthani", "tamil")
+    elif data_obj is Dataset.L2:
+        accent_list =  ("arabic", "chinese", "hindi", "korean", "spanish", "vietnamese")
+    elif data_obj is Dataset.MCV:
+        accent_list = ("african", "australia", "canada", "england", "hongkong", "indian", "ireland", "philippines", "scotland", "southatlandtic", "us")
+    else:
+        raise ValueError(f"{data_obj.name} is not a valid Dataset")
+
+    return accent_list
 
 def DATASET_PATH(data_obj):
     if data_obj is Dataset.INDIC:
@@ -57,6 +68,8 @@ def BUDGET_TO_DURATION(budget):
     return floor(4.92 * budget)
 
 
+
+
 def update_config(config):
     config["HOME_PATH"], config["DATASET_PATH"], config["WAV_PATH"] = get_path(
         Dataset[config["dataset"]]
@@ -65,6 +78,7 @@ def update_config(config):
         config["HOME_PATH"], config["DATASET_PATH"]
     )
     config["FULL_WAV_PATH"] = os.path.join(config["HOME_PATH"], config["WAV_PATH"])
+    config["all_accents"] = get_all_accents(Dataset[config["dataset"]])
     return config
 
 
