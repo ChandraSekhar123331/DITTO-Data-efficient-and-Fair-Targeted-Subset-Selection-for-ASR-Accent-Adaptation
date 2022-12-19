@@ -2,6 +2,8 @@ import os
 from enum import Enum
 from math import floor
 
+import regex as re
+
 
 class Dataset(Enum):
     INDIC = 1
@@ -19,17 +21,86 @@ def get_path(data_obj):
     WAV = WAV_PATH(data_obj)
     return HOME, DATASET, WAV
 
+
+def get_accent(line, dataset_name):
+    data_obj = Dataset[dataset_name]
+    if data_obj is Dataset.INDIC:
+        accent = (
+            re.search("/indicTTS/([A-Za-z_\-]+)/", line["audio_filepath"])
+            .group(1)
+            .split("_")[0]
+        )
+    elif data_obj is Dataset.L2:
+        accent_map = {
+            "ABA": "Arabic",
+            "SKA": "Arabic",
+            "YBAA": "Arabic",
+            "ZHAA": "Arabic",
+            "BWC": "Chinese",
+            "LXC": "Chinese",
+            "NCC": "Chinese",
+            "TXHC": "Chinese",
+            "ASI": "Hindi",
+            "RRBI": "Hindi",
+            "SVBI": "Hindi",
+            "TNI": "Hindi",
+            "HJK": "Korean",
+            "HKK": "Korean",
+            "YDCK": "Korean",
+            "YKWK": "Korean",
+            "EBVS": "Spanish",
+            "ERMS": "Spanish",
+            "MBMPS": "Spanish",
+            "NJS": "Spanish",
+            "HQTV": "Vietnamese",
+            "PNV": "Vietnamese",
+            "THV": "Vietnamese",
+            "TLV": "Vietnamese",
+        }
+
+        speaker = re.search("/l2_new/([A-Za-z_\-]+)/", line["audio_filepath"]).group(1)
+        print(speaker)
+        accent = accent_map[speaker]
+    elif data_obj is Dataset.MCV:
+        accent = line["accent"]
+    else:
+        raise ValueError(f"{data_obj.name} is not a valid Dataset")
+    return accent
+
+
 def get_all_accents(data_obj):
     if data_obj is Dataset.INDIC:
-        accent_list =  ("assamese", "gujarati", "hindi", "kannada", "malayalam", "manipuri", "rajasthani", "tamil")
+        accent_list = (
+            "assamese",
+            "gujarati",
+            "hindi",
+            "kannada",
+            "malayalam",
+            "manipuri",
+            "rajasthani",
+            "tamil",
+        )
     elif data_obj is Dataset.L2:
-        accent_list =  ("arabic", "chinese", "hindi", "korean", "spanish", "vietnamese")
+        accent_list = ("arabic", "chinese", "hindi", "korean", "spanish", "vietnamese")
     elif data_obj is Dataset.MCV:
-        accent_list = ("african", "australia", "canada", "england", "hongkong", "indian", "ireland", "philippines", "scotland", "southatlandtic", "us")
+        accent_list = (
+            "african",
+            "australia",
+            "canada",
+            "england",
+            "hongkong",
+            "indian",
+            "ireland",
+            "philippines",
+            "scotland",
+            "southatlandtic",
+            "us",
+        )
     else:
         raise ValueError(f"{data_obj.name} is not a valid Dataset")
 
     return accent_list
+
 
 def DATASET_PATH(data_obj):
     if data_obj is Dataset.INDIC:
@@ -66,8 +137,6 @@ def WAV_PATH(data_obj):
 
 def BUDGET_TO_DURATION(budget):
     return floor(4.92 * budget)
-
-
 
 
 def update_config(config):
