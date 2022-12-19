@@ -3,7 +3,8 @@ import os
 from utils.dataset import HOME_PATH
 
 
-def test(JSON_PATH, TEST_JSON_PATH, CKPT_PATH, PRETRAINED_CKPTS, WAV_PATH, CUDA):
+def test(DUMP_PATH, TEST_JSON_PATH, CKPT_PATH, PRETRAINED_CKPTS, WAV_PATH, CUDA):
+    assert os.path.isdir(DUMP_PATH)
     HOME = HOME_PATH()
     SCRIPT_DIR = os.path.join(HOME, "models", "quartznet_asr")
     MODEL_DIR = CKPT_PATH
@@ -20,8 +21,8 @@ def test(JSON_PATH, TEST_JSON_PATH, CKPT_PATH, PRETRAINED_CKPTS, WAV_PATH, CUDA)
         --model_toml=$PRETRAINED_CKPTS/quartznet/quartznet15x5.toml \
         --ckpt=$model_dir/best/Jasper.pt \
         > $model_dir/test_infer_log.txt;
-        cp -v $model_dir/test_infer_log.txt {os.path.dirname(JSON_PATH)};
-    echo {JSON_PATH} completed;
+        cp -v $model_dir/test_infer_log.txt {DUMP_PATH};
+    echo TESTING {TEST_JSON_PATH} completed;
     """
 
     os.system(command)
