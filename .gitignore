@@ -44,3 +44,4 @@ w2v2/w2v2_timit
 MCV_accent/content/cache
 MCV_accent/data/dristi_accent-recognition/checkpoint-6400
 internet_access.sh
+*.pkl
