@@ -1,4 +1,3 @@
-models
 data/indicTTS_audio
 data/*ish
 CMU_Arc
@@ -45,3 +44,4 @@ MCV_accent/content/cache
 MCV_accent/data/dristi_accent-recognition/checkpoint-6400
 internet_access.sh
 *.pkl
+models/pretrained_checkpoints
