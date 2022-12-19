@@ -47,3 +47,117 @@ declare -a accents=('kannada' 'rajasthani' 'gujarati' 'hindi' 'malayalam' 'assam
 #         --query_set_composn 1 1
 
 # } &>$LOG_DIR/$curr_file_name/"$(date '+%Y-%m-%d %H:%M:%S')"
+
+# {
+#     python -m methods.global_random --dataset $DATASET --cuda $CUDA --budget 500 --sample
+#     python -m methods.global_random --dataset $DATASET --cuda $CUDA --budget 500 --finetune --finetune_accent assamese
+#     python -m methods.global_random --dataset $DATASET --cuda $CUDA --budget 500 --finetune --finetune_accent tamil
+#     python -m methods.global_random --dataset $DATASET --cuda $CUDA --budget 500 --finetune --finetune_accent hindi
+#     python -m methods.global_random --dataset $DATASET --cuda $CUDA --budget 500 --finetune --finetune_accent rajasthani
+
+# } &>$LOG_DIR/$curr_file_name/"$(date '+%Y-%m-%d %H:%M:%S')"
+# {
+#     python -m methods.global_TSS --dataset $DATASET --cuda $CUDA \
+#         --budget 500 --fxn FL2MI --eta 1.0 --sim euclidean --feature MFCC \
+#         --target 20 --target_accent assamese-hindi::1-1 --sample --target_directory_path mixed
+
+#     python -m methods.global_TSS --dataset $DATASET --cuda $CUDA \
+#         --budget 500 --fxn GCMI --eta 1.0 --sim euclidean --feature MFCC \
+#         --target 20 --target_accent assamese-hindi::1-1 --sample --target_directory_path mixed
+
+#     python -m methods.global_TSS --dataset $DATASET --cuda $CUDA \
+#         --budget 500 --fxn FL2MI --eta 1.0 --sim euclidean --feature MFCC \
+#         --target 20 --target_accent rajasthani-tamil::1-1 --sample --target_directory_path mixed
+
+#     python -m methods.global_TSS --dataset $DATASET --cuda $CUDA \
+#         --budget 500 --fxn GCMI --eta 1.0 --sim euclidean --feature MFCC \
+#         --target 20 --target_accent rajasthani-tamil::1-1 --sample --target_directory_path mixed
+
+# } &>$LOG_DIR/$curr_file_name/"$(date '+%Y-%m-%d %H:%M:%S')"
+
+# {
+#     python -m methods.global_TSS --dataset $DATASET --cuda $CUDA \
+#         --budget 750 --fxn FL2MI --eta 1.0 --sim euclidean --feature MFCC \
+#         --target 50 --target_accent assamese-hindi::1-1 --sample --target_directory_path mixed
+
+#     python -m methods.global_TSS --dataset $DATASET --cuda $CUDA \
+#         --budget 750 --fxn GCMI --eta 1.0 --sim euclidean --feature MFCC \
+#         --target 50 --target_accent assamese-hindi::1-1 --sample --target_directory_path mixed
+
+#     python -m methods.global_TSS --dataset $DATASET --cuda $CUDA \
+#         --budget 750 --fxn FL2MI --eta 1.0 --sim euclidean --feature MFCC \
+#         --target 50 --target_accent rajasthani-tamil::1-1 --sample --target_directory_path mixed
+
+#     python -m methods.global_TSS --dataset $DATASET --cuda $CUDA \
+#         --budget 750 --fxn GCMI --eta 1.0 --sim euclidean --feature MFCC \
+#         --target 50 --target_accent rajasthani-tamil::1-1 --sample --target_directory_path mixed
+
+# } &>$LOG_DIR/$curr_file_name/"$(date '+%Y-%m-%d %H:%M:%S')"
+
+# {
+#     python -m methods.global_TSS --dataset $DATASET --cuda $CUDA \
+#         --budget 500 --fxn FL2MI --eta 1.0 --sim cosine --feature MFCC \
+#         --target 20 --target_accent assamese-hindi::1-1 --target_directory_path mixed --sample
+
+#     python -m methods.global_TSS --dataset $DATASET --cuda $CUDA \
+#         --budget 500 --fxn GCMI --eta 1.0 --sim cosine --feature MFCC \
+#         --target 20 --target_accent assamese-hindi::1-1 --target_directory_path mixed --sample
+
+#     python -m methods.global_TSS --dataset $DATASET --cuda $CUDA \
+#         --budget 500 --fxn FL2MI --eta 1.0 --sim cosine --feature MFCC \
+#         --target 20 --target_accent rajasthani-tamil::1-1 --target_directory_path mixed --sample
+
+#     python -m methods.global_TSS --dataset $DATASET --cuda $CUDA \
+#         --budget 500 --fxn GCMI --eta 1.0 --sim cosine --feature MFCC \
+#         --target 20 --target_accent rajasthani-tamil::1-1 --target_directory_path mixed --sample
+
+# } &>$LOG_DIR/$curr_file_name/"$(date '+%Y-%m-%d %H:%M:%S')"
+
+{
+
+    budget=4000
+    eta=1.0
+    fxns=('GCMI' 'FL2MI')
+    feature=MFCC
+    sims=('euclidean' 'cosine')
+    target=20
+
+    for sim in "${sims[@]}"; do
+        for fxn in "${fxns[@]}"; do
+            python -m methods.global_TSS --dataset $DATASET --cuda $CUDA \
+                --budget $budget --fxn $fxn --eta $eta --sim $sim --feature $feature \
+                --target $target --target_accent assamese-hindi::1-1 \
+                --target_directory_path mixed --sample
+
+            python -m methods.global_TSS --dataset $DATASET --cuda $CUDA \
+                --budget $budget --fxn $fxn --eta $eta --sim $sim --feature $feature \
+                --target $target --target_accent rajasthani-tamil::1-1 \
+                --target_directory_path mixed --sample
+        done
+    done
+} &>$LOG_DIR/$curr_file_name/"$(date '+%Y-%m-%d %H:%M:%S')"
+
+# {
+#     python -m methods.global_TSS --dataset $DATASET --cuda $CUDA \
+#         --budget 500 --fxn FL2MI --eta 1.0 --sim euclidean --feature MFCC \
+#         --target 20 --target_accent assamese-hindi::1-1 --target_directory_path mixed --finetune --finetune_accent assamese
+
+# } &>$LOG_DIR/$curr_file_name/"$(date '+%Y-%m-%d %H:%M:%S')"
+
+# {
+#     python -m methods.global_SM --dataset $DATASET --cuda $CUDA \
+#         --budget 500 --fxn FacLoc --sim euclidean --lambdaVal 1 \
+#         --feature MFCC --sample
+
+#     python -m methods.global_SM --dataset $DATASET --cuda $CUDA \
+#         --budget 500 --fxn LogDet --sim euclidean --lambdaVal 1 \
+#         --feature MFCC --sample
+
+#     python -m methods.global_SM --dataset $DATASET --cuda $CUDA \
+#         --budget 500 --fxn FacLoc --sim cosine --lambdaVal 1 \
+#         --feature MFCC --sample
+
+#     python -m methods.global_SM --dataset $DATASET --cuda $CUDA \
+#         --budget 500 --fxn LogDet --sim cosine --lambdaVal 1 \
+#         --feature MFCC --sample
+# } &>$LOG_DIR/$curr_file_name/"$(date '+%Y-%m-%d %H:%M:%S')"
