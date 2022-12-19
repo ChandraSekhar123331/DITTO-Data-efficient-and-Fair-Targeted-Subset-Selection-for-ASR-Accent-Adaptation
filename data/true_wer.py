@@ -1,20 +1,33 @@
 import argparse
 import json
-from pprint import pprint
-import random
-import numpy as np
 import os
+import random
+from pprint import pprint
+
+import numpy as np
+
 
 def get_budget(budget_size):
-    return int(4.92*budget_size)
+    return int(4.92 * budget_size)
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description="True wer based diversity")
     parser.add_argument(
-        "--inp_json", type=str, required=True, help="input json file from which we subset select"
+        "--inp_json",
+        type=str,
+        required=True,
+        help="input json file from which we subset select",
     )
-    parser.add_argument("--budget", type=int, required = True, help="budget(i.e. number of selections)")
-    parser.add_argument("--exp_id", type=int, required = True, help="experiment id. The output path depends on this")
+    parser.add_argument(
+        "--budget", type=int, required=True, help="budget(i.e. number of selections)"
+    )
+    parser.add_argument(
+        "--exp_id",
+        type=int,
+        required=True,
+        help="experiment id. The output path depends on this",
+    )
     args = parser.parse_args()
     return args
 
@@ -26,40 +39,38 @@ def main(args):
     total_budget = get_budget(args.budget)
     exp_id = args.exp_id
     seed = args.exp_id
-    
+
     random.seed(seed)
     np.random.seed(seed)
 
-    inp_json_dir = '/'.join(inp_json_file.split('/')[:-1])
-    output_json_dir = os.path.join(inp_json_dir,'budget_{}'.format(budget), 'true_wer','run_'+str(exp_id))
-    output_json_file = os.path.join(output_json_dir, 'train.json')
-    
+    inp_json_dir = "/".join(inp_json_file.split("/")[:-1])
+    output_json_dir = os.path.join(
+        inp_json_dir, "budget_{}".format(budget), "true_wer", "run_" + str(exp_id)
+    )
+    output_json_file = os.path.join(output_json_dir, "train.json")
+
     with open(inp_json_file) as inp_file:
         data = [json.loads(line.strip()) for line in inp_file.readlines()]
-        data.sort(key = lambda x: x["pretrained_wer"], reverse = True)
-    
+        data.sort(key=lambda x: x["pretrained_wer"], reverse=True)
+
     pprint("Printing Sample WER data in sorted order")
     pprint(data[:5])
-    
-    
+
     pprint(f"Started writing to file: {output_json_file}")
     os.makedirs(output_json_dir, exist_ok=True)
-    with open(output_json_file, 'w') as out_file:
+    with open(output_json_file, "w") as out_file:
         budget_taken = 0
         for line in data:
-            budget_taken += line['duration']
-            
+            budget_taken += line["duration"]
+
             out_file.write(json.dumps(line))
             out_file.write("\n")
-            
+
             if budget_taken >= total_budget:
                 break
-    
+
     pprint(f"Writing to file: {output_json_file} is done")
-        
-    
-    
-    
+
 
 #     print("loading data....")
 #     data, input_file_lines = load_phoneme_seq_from_pseudo_transcripts(selection_json_file, remove_duplicates=False)
@@ -74,7 +85,7 @@ def main(args):
 #     corpus = []
 #     for phoneme_seq in data:
 #         corpus.append(" ".join(list(map(str, convert_phonemes_to_ids(phoneme_seq)))))
-    
+
 #     print("Sample phonemes converted to ids")
 #     print(corpus[0])
 
