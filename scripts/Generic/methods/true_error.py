@@ -2,7 +2,7 @@ import argparse
 import os
 
 import numpy as np
-from utils.dataset import BUDGET_TO_DURATION, all_datasets, update_config
+from utils.dataset import BUDGET_TO_DURATION, all_datasets, all_servers, update_config
 from utils.finetune import finetune
 from utils.test import test
 from utils.utils import dump_lines, read_lines, sample_greedy
@@ -15,6 +15,7 @@ def get_metric(line, config):
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", choices=all_datasets(), type=str, required=True)
+    parser.add_argument("--server", choices=all_servers(), type=str, required=True)
     parser.add_argument("--cuda", type=int, required=True, choices=[0, 1, 2, 3])
     parser.add_argument("--sample", action="store_true", default=False)
     parser.add_argument("--finetune", action="store_true", default=False)
@@ -93,6 +94,7 @@ def finetune_true_error(config):
             PRETRAINED_CKPTS=PRETRAINED_CKPTS,
             WAV_PATH=config["FULL_WAV_PATH"],
             CUDA=config["cuda"],
+            SERVER=config["server"],
         )
 
 
@@ -129,6 +131,7 @@ def test_true_error(config):
             PRETRAINED_CKPTS=PRETRAINED_CKPTS,
             WAV_PATH=config["FULL_WAV_PATH"],
             CUDA=config["cuda"],
+            SERVER=config["server"],
         )
 
 
