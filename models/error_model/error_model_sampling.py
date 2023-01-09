@@ -110,22 +110,28 @@ def normalize_string(s, labels=labels, table=table, **unused_kwargs):
         return None
 
 
-def normalized_json_transcript(json_str):
-    transcript = json.loads(json_str.strip())["pseudo_text"]  # ["text"]
+def normalized_json_transcript(json_str, pseudoTrans):
+    if pseudoTrans:
+        transcript = json.loads(json_str.strip())["pseudo_text"]
+    else:
+        transcript = json.loads(json_str.strip())["REF"]
     output = normalize_string(transcript, labels, table)
     # print(output)
     return output
 
 
 class ErrorModelSampler:
-    def __init__(self, json_file, error_model_weights=None):
+    def __init__(self, json_file, skip_cnt, pseudoTrans, error_model_weights=None):
         self.json_file = json_file
         print("\tparsing json...")
 
         self.sentences = [
-            normalized_json_transcript(line) for line in open(self.json_file)
-        ]
-        self.json_lines = [line for line in open(self.json_file)]
+            normalized_json_transcript(line, pseudoTrans)
+            for line in open(self.json_file)
+        ][skip_cnt:]
+        print("num sentences for sampler = ", len(self.sentences))
+        self.json_lines = [line for line in open(self.json_file)][skip_cnt:]
+        print("num json lines for sampler = ", len(self.sentences))
         self.phone_sentences = []
 
         print("\tgenerating_vocab...")
@@ -231,8 +237,12 @@ def get_samples(sampler, duration):
     return sampler.sample(duration)
 
 
-def get_json_duration(json_file):
-    return sum([json.loads(line.strip())["duration"] for line in open(json_file)])
+# def get_json_duration(json_file):
+#     return sum([json.loads(line.strip())["duration"] for line in open(json_file)])
+
+
+def get_duration(lines):
+    return sum([json.loads(line.strip())["duration"] for line in lines])
 
 
 def parse_args():
@@ -245,6 +255,12 @@ def parse_args():
     parser.add_argument(
         "--seed_json_file", type=str, help="path to json file containing seed sentences"
     )
+    parser.add_argument("--seed_budget", type=int, choices=[100, 200], required=True)
+    parser.add_argument(
+        "--selection_skip_cnt", type=int, required=True, choices=[100, 200]
+    )
+    parser.add_argument("--output_dir", type=str, required=True)
+    parser.add_argument("--pseudoTrans", action="store_true", default=False)
     parser.add_argument(
         "--error_model_weights",
         type=str,
@@ -259,17 +275,19 @@ def parse_args():
 def main(args):
     selection_json_file = args.selection_json_file
     seed_json_file = args.seed_json_file
-    seed_samples = [line for line in open(seed_json_file)]
+    seed_samples = [line for line in open(seed_json_file)][: args.seed_budget]
+    print("len seed samples = ", len(seed_samples))
     weights_file = args.error_model_weights
     exp_id = args.exp_id
     budget = args.budget
-    weights = pickle.load(open(weights_file, "rb"))
+    weights = pickle.load(open(weights_file, "rb"))[args.selection_skip_cnt :]
+    print("len weights = ", len(weights))
     weights_list = [weights]
     num_samples = budget
     # random_json_file = os.path.join(random_json_path,str(num_samples),'seed_'+exp_id,'train.json')
     # random_samples_duration = get_json_duration(random_json_file)
-    selection_file_dir = "/".join(selection_json_file.split("/")[:-1])
-    seed_duration = get_json_duration(seed_json_file)
+    # selection_file_dir = "/".join(selection_json_file.split("/")[:-1])
+    seed_duration = get_duration(seed_samples)
     print(
         "budget asked:{:.2f}".format(budget_duration(budget)),
         "seed duration:{:.2f}".format(seed_duration),
@@ -278,13 +296,16 @@ def main(args):
     print("leftover duration from error:{:.2f}".format(required_duration))
     assert required_duration > 0
     output_json_file = os.path.join(
-        selection_file_dir,
-        "budget_{}".format(budget),
-        "error_model",
+        args.output_dir,
         "run_" + exp_id,
         "train.json",
     )
-    sampler = ErrorModelSampler(selection_json_file, error_model_weights=weights_list)
+    sampler = ErrorModelSampler(
+        selection_json_file,
+        error_model_weights=weights_list,
+        skip_cnt=args.selection_skip_cnt,
+        pseudoTrans=args.pseudoTrans,
+    )
     samples = get_samples(sampler, required_duration)
     dump_samples(seed_samples + samples, output_json_file)
 

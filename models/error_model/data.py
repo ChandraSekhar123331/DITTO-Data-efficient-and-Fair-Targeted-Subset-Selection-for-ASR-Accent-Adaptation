@@ -1,3 +1,4 @@
+import json
 import multiprocessing
 import random
 from math import floor
@@ -6,7 +7,7 @@ from multiprocessing import Manager, Pool
 import numpy as np
 import torch
 from g2p_en import G2p
-from helpers import normalized_json_transcript, normalized_json_transcript_orig_transc
+from helpers import normalized_json_transcript
 from joblib import Parallel, delayed
 from power.aligner import PowerAligner
 from seq2edits_utils import ndiff
@@ -116,38 +117,13 @@ def convert_phonemes_to_ids(phoneme_sequence):
     return [phone_list.index(item) for item in phoneme_sequence]
 
 
-def load_phoneme_sequences(json_manifest_paths, remove_duplicates=True):
+def load_phoneme_sequences(json_manifest_paths, pseudoTrans, remove_duplicates=True):
     sentences = []
     for json_path in json_manifest_paths:
         with open(json_path) as f:
             lines = [line for line in f]
             data = Parallel(n_jobs=-1)(
-                delayed(normalized_json_transcript)(line)
-                for line in tqdm(lines, total=len(lines))
-            )
-            print(type(data))
-            print(data[0])
-            sentences += data
-
-    if remove_duplicates:
-        sentences = list(set(sentences))  # remove duplicates
-
-    phoneme_sentences = Parallel(n_jobs=8)(
-        delayed(get_phoneme_transcript)(item)
-        for item in tqdm(sentences, total=len(sentences))
-    )
-    print(type(phoneme_sentences))
-    print(phoneme_sentences[0])
-    return phoneme_sentences
-
-
-def load_phoneme_sequences_orig_transc(json_manifest_paths, remove_duplicates=True):
-    sentences = []
-    for json_path in json_manifest_paths:
-        with open(json_path) as f:
-            lines = [line for line in f]
-            data = Parallel(n_jobs=-1)(
-                delayed(normalized_json_transcript_orig_transc)(line)
+                delayed(normalized_json_transcript)(line, pseudoTrans)
                 for line in tqdm(lines, total=len(lines))
             )
             print(type(data))
@@ -266,58 +242,92 @@ def get_WER_from_para(para):
     return float(para.strip().split("\n")[2][5:])
 
 
-def generate_error_data_from_hypotheses_file_orig_transc(
-    path_hypotheses, skip_zero_CER=False
-):
-    with open(path_hypotheses) as f:
-        paragraphs = f.read().strip().split("\n\n")
+# def generate_error_data_from_hypotheses_file_orig_transc(
+#     path_hypotheses, skip_zero_CER=False
+# ):
+#     with open(path_hypotheses) as f:
+#         paragraphs = f.read().strip().split("\n\n")
+#         ref_hyp_pairs = [
+#             (para.strip().split("\n")[3][5:], para.strip().split("\n")[4][5:])
+#             for para in paragraphs
+#             if (not skip_zero_CER or get_WER_from_para(para) != 0.0)
+#         ]
+#         ## here ref is the orig-text = index-3 and hyp is pseudo_text = index-4
+#         pool = Pool(16)
+#         multiprocessed_output = list(
+#             filter(
+#                 None,
+#                 pool.map(
+#                     __generate_error_sequence,
+#                     tqdm(ref_hyp_pairs, total=len(ref_hyp_pairs)),
+#                 ),
+#             )
+#         )
+#         pool.close()
+#         error_sequences, reference_phonemes = zip(*multiprocessed_output)
+#         print(error_sequences[0])
+#         print(reference_phonemes[0])
+#         return list(zip(error_sequences, reference_phonemes))
+
+
+# def geneate_error_data_from_hypotheses_file(
+#     path_hypotheses, use_pseudoTrans, skip_zero_CER=False
+# ):
+#     with open(path_hypotheses) as f:
+#         paragraphs = f.read().strip().split("\n\n")
+#         ref_hyp_pairs = [
+#             (para.strip().split("\n")[4][5:], para.strip().split("\n")[3][5:])
+#             for para in paragraphs
+#             if (not skip_zero_CER or get_WER_from_para(para) != 0.0)
+#         ]  # 3, 4 indices exchanged for our use case
+#         ## For us ref is the pseudo-text and hyp is orig_text
+#         pool = Pool(16)
+#         multiprocessed_output = list(
+#             filter(
+#                 None,
+#                 pool.map(
+#                     __generate_error_sequence,
+#                     tqdm(ref_hyp_pairs, total=len(ref_hyp_pairs)),
+#                 ),
+#             )
+#         )
+#         pool.close()
+#         error_sequences, reference_phonemes = zip(*multiprocessed_output)
+#         print(error_sequences[0])
+#         print(reference_phonemes[0])
+#         return list(zip(error_sequences, reference_phonemes))
+
+
+def generate_error_data_from_json(json_path, use_pseudoTrans, skip_zero_CER=False):
+    lines = [json.loads(line.strip()) for line in open(json_path)]
+    if use_pseudoTrans:
         ref_hyp_pairs = [
-            (para.strip().split("\n")[3][5:], para.strip().split("\n")[4][5:])
-            for para in paragraphs
-            if (not skip_zero_CER or get_WER_from_para(para) != 0.0)
+            (line["pseudo_text"], line["REF"])
+            for line in lines
+            if (not skip_zero_CER or line["CER"] != 0)
         ]
-        ## here ref is the orig-text = index-3 and hyp is pseudo_text = index-4
-        pool = Pool(16)
-        multiprocessed_output = list(
-            filter(
-                None,
-                pool.map(
-                    __generate_error_sequence,
-                    tqdm(ref_hyp_pairs, total=len(ref_hyp_pairs)),
-                ),
-            )
-        )
-        pool.close()
-        error_sequences, reference_phonemes = zip(*multiprocessed_output)
-        print(error_sequences[0])
-        print(reference_phonemes[0])
-        return list(zip(error_sequences, reference_phonemes))
-
-
-def geneate_error_data_from_hypotheses_file(path_hypotheses, skip_zero_CER=False):
-    with open(path_hypotheses) as f:
-        paragraphs = f.read().strip().split("\n\n")
+    else:
         ref_hyp_pairs = [
-            (para.strip().split("\n")[4][5:], para.strip().split("\n")[3][5:])
-            for para in paragraphs
-            if (not skip_zero_CER or get_WER_from_para(para) != 0.0)
-        ]  # 3, 4 indices exchanged for our use case
-        ## For us ref is the pseudo-text and hyp is orig_text
-        pool = Pool(16)
-        multiprocessed_output = list(
-            filter(
-                None,
-                pool.map(
-                    __generate_error_sequence,
-                    tqdm(ref_hyp_pairs, total=len(ref_hyp_pairs)),
-                ),
-            )
+            (line["REF"], line["pseudo_text"])
+            for line in lines
+            if (not skip_zero_CER or line["CER"] != 0)
+        ]
+
+    pool = Pool(16)
+    multiprocessed_output = list(
+        filter(
+            None,
+            pool.map(
+                __generate_error_sequence,
+                tqdm(ref_hyp_pairs, total=len(ref_hyp_pairs)),
+            ),
         )
-        pool.close()
-        error_sequences, reference_phonemes = zip(*multiprocessed_output)
-        print(error_sequences[0])
-        print(reference_phonemes[0])
-        return list(zip(error_sequences, reference_phonemes))
+    )
+    pool.close()
+    error_sequences, reference_phonemes = zip(*multiprocessed_output)
+    print(error_sequences[0])
+    print(reference_phonemes[0])
+    return list(zip(error_sequences, reference_phonemes))
 
 
 def __get_error_sequence_between_words(reference, hypothesis):

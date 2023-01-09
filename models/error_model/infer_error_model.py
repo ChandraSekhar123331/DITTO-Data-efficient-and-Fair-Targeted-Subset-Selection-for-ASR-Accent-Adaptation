@@ -61,6 +61,7 @@ def parse_args():
     parser.add_argument(
         "--output_dir", default=None, type=str, help="path to dump weights"
     )
+    parser.add_argument("--pseudoTrans", action="store_true", default=False)
     args = parser.parse_args()
     return args
 
@@ -75,7 +76,9 @@ def main(args):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     print("loading data....")
-    data = load_phoneme_sequences([json_path], remove_duplicates=False)
+    data = load_phoneme_sequences(
+        [json_path], pseudoTrans=args.pseudoTrans, remove_duplicates=False
+    )
 
     print("data_size: {}".format(len(data)))
 

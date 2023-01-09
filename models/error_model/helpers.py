@@ -73,13 +73,11 @@ def normalize_string(s, labels=labels, table=table, **unused_kwargs):
         return None
 
 
-def normalized_json_transcript(json_str):
-    transcript = json.loads(json_str.strip())["pseudo_text"]
-    return normalize_string(transcript, labels, table)
-
-
-def normalized_json_transcript_orig_transc(json_str):
-    transcript = json.loads(json_str.strip())["text"]
+def normalized_json_transcript(json_str, pseudoTrans):
+    if pseudoTrans:
+        transcript = json.loads(json_str.strip())["pseudo_text"]
+    else:
+        transcript = json.loads(json_str.strip())["REF"]
     return normalize_string(transcript, labels, table)
 
 
