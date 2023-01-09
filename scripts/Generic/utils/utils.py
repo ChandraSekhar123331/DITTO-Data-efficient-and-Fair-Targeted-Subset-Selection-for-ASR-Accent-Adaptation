@@ -67,10 +67,28 @@ def read_lines(INPUT_JSON_PATH):
     return [json.loads(line.strip()) for line in open(INPUT_JSON_PATH)]
 
 
-def dump_gains(gains, file_path):
+def read_python_obj(file_path):
+    with open(file_path, "rb") as file:
+        obj = pickle.load(file)
+    return obj
+
+
+def read_python_list_obj(file_path):
+    lst = []
+    with open(file_path, "rb") as file:
+        while True:
+            try:
+                obj = pickle.load(file)
+                lst.append(obj)
+            except:
+                break
+    return lst
+
+
+def dump_python_obj(obj, file_path):
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     with open(file_path, "wb") as file:
-        pickle.dump(gains, file)
+        pickle.dump(obj, file)
     return
 
 
@@ -181,6 +199,9 @@ def load_features(json_lst, dataset, FULL_DATASET_PATH, feature_type):
         )
         for accent in all_accents
     }
+    # print(accent_features_dict)
+    # print("HELLO", flush=True)
+    # print([get_accent(line, dataset) for line in json_lst])
     return np.concatenate(
         [
             accent_features_dict[get_accent(line, dataset)][line["audio_filepath"]]
