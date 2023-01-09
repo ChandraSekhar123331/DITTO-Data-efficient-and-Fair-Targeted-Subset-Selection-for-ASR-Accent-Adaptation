@@ -44,5 +44,7 @@ MCV_accent/content/cache
 MCV_accent/data/dristi_accent-recognition/checkpoint-6400
 internet_access.sh
 *.pkl
+*.logits
 models/pretrained_checkpoints
 entropy-testing/pseudo-transcript-entropy/models/
+mz-isca/classifier-data/anaconda.sh
