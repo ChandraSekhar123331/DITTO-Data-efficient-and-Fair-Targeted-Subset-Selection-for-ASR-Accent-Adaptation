@@ -3,8 +3,10 @@ import os
 from utils.dataset import HOME_PATH
 
 
-def finetune(JSON_PATH, VAL_JSON_PATH, CKPT_PATH, PRETRAINED_CKPTS, WAV_PATH, CUDA):
-    HOME = HOME_PATH()
+def finetune(
+    JSON_PATH, VAL_JSON_PATH, CKPT_PATH, PRETRAINED_CKPTS, WAV_PATH, CUDA, SERVER
+):
+    HOME = HOME_PATH(server=SERVER)
     SCRIPT_DIR = os.path.join(HOME, "models", "quartznet_asr")
     MODEL_DIR = CKPT_PATH
     command = f"""
