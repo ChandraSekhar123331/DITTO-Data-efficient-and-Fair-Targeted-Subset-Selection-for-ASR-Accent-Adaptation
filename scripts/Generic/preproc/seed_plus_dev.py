@@ -3,12 +3,13 @@ import json
 import os
 from pprint import pprint
 
-from utils.dataset import all_datasets, update_config
+from utils.dataset import all_datasets, all_servers, update_config
 
 
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", choices=all_datasets(), type=str, required=True)
+    parser.add_argument("--server", choices=all_servers(), type=str, required=True)
     parser.add_argument("--cuda", type=int, required=True, choices=[0, 1, 2, 3])
     parser.add_argument("--accent", type=str, required=True)
     args = parser.parse_args()
