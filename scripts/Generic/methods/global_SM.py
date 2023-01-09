@@ -4,7 +4,13 @@ import shutil
 from collections import Counter
 from pprint import pprint
 
-from utils.dataset import BUDGET_TO_DURATION, all_datasets, all_servers, update_config
+from utils.dataset import (
+    BUDGET_TO_DURATION,
+    all_datasets,
+    all_features,
+    all_servers,
+    update_config,
+)
 from utils.finetune import finetune
 from utils.test import test
 from utils.utils import (
@@ -222,7 +228,7 @@ def get_args():
     parser.add_argument(
         "--feature",
         required=True,
-        choices=["MFCC", "w2v2_Ftill10_768-512-256"],
+        choices=all_features(),
     )
 
     args = parser.parse_args()
